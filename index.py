@@ -61,7 +61,8 @@ class admin:
         return "Nothing to see here"
 
 
-kinds = ['colorwipe', 'theater', 'rainbow', 'rainbowchase', 'theaterrainbow']
+kinds = ['colorwipe', 'theater', 'rainbow', 'rainbowchase', 'theaterrainbow',
+         'knightrider']
 colorRegex = re.compile('#[0-9a-fA-F]{6}')
 
 
@@ -75,7 +76,7 @@ class arduino_change:
             if seconds_passed > min_ttl:
                 toSend = ""
                 toSend += chr(kinds.index(kind))
-                if kind in ['colorwipe', 'theater']:
+                if kind in ['colorwipe', 'theater', 'knightrider']:
                     if 'color' in s and re.match(colorRegex, s['color']):
                         for i in [1,3,5]:
                             toSend += chr(int(s['color'][i]+s['color'][i+1], 16))
