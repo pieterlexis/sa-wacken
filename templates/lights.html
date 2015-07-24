@@ -1,0 +1,58 @@
+<div class="schrale-content">
+  <h1>Control the Lights</h1>
+  <script>
+// Here we put countdown to possible next change code
+var seconds = {{ numsec }};
+var span  = document.getElementById("numsec");
+while(seconds != 0) {
+  span.innerHTML = '';
+  span.appendChildText(seconds);
+  seconds--;
+  sleep(1000);
+}
+  </script>
+
+  <!--   <p class="lead">You may submit in <span id="numsec"></span> seconds.</p> -->
+  <hr>
+  <p class="lead">Color Wipe (streaming one color on-off)</p>
+  <form class="form-inline" role=form action="/arduino/colorwipe" method="post">
+    <div class="form-group">
+      <label for="color">Color:</label> <input type="color" class="form-control" name="color" value="#{{red}}{{green}}{{blue}}">&nbsp;
+      <label for="speed">Speed:</label> <input type="number" class="form-control" name="speed" value="5">
+      <input type="submit" class="form-control" value="GO!">
+    </div>
+  </form>
+  <hr>
+  <p class="lead">Theater (alternating on-off in a single color)</p>
+  <form class="form-inline" role=form action="/arduino/theater" method="post">
+    <div class="form-group">
+      <label for="color">Color:</label> <input type="color" class="form-control" name="color" value="#{{red}}{{green}}{{blue}}">&nbsp;
+      <label for="speed">Speed:</label> <input type="number" class="form-control" name="speed" value="5">
+      <input type="submit" class="form-control" value="GO!">
+    </div>
+  </form>
+  <hr>
+  <p class="lead">Rainbow (a moving rainbow)</p>
+  <form class="form-inline" role=form action="/arduino/rainbow" method="post">
+    <div class="form-group">
+      <label for="speed">Speed:</label> <input type="number" class="form-control" name="speed" value="5">
+      <input type="submit" class="form-control" value="GO!">
+    </div>
+  </form>
+  <hr>
+  <p class="lead">Rainbow (evenly distributed moving rainbow)</p>
+  <form class="form-inline" role=form action="/arduino/rainbowchase" method="post">
+    <div class="form-group">
+      <label for="speed">Speed:</label> <input type="number" class="form-control" name="speed" value="5">
+      <input type="submit" class="form-control" value="GO!">
+    </div>
+  <hr>
+  <p class="lead">Theater rainbow (alternating on-off in all colors)</p>
+  <form class="form-inline" role=form action="/arduino/theaterainbow" method="post">
+    <div class="form-group">
+      <label for="speed">Speed:</label> <input type="number" class="form-control" name="speed" value="5">
+      <input type="submit" class="form-control" value="GO!">
+    </div>
+  </form>
+  <hr>
+</div>
