@@ -29,24 +29,21 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(150, PIN, NEO_GRB + NEO_KHZ800);
  * 3 - blue
  * 4 - interval
  */
-byte mode_color[5] = {1, 255, 255, 0, 60};
+byte mode_color[5] = {255, 0, 0, 0, 60};
+
+unsigned long time = millis();
 
 void setup() {
-  // This is for Trinket 5V 16MHz, you can remove these three lines if you are not using a Trinket
-  #if defined (__AVR_ATtiny85__)
-    if (F_CPU == 16000000) clock_prescale_set(clock_div_1);
-  #endif
-  // End of trinket special code
-
   strip.begin();
   strip.setBrightness(90);
   strip.show(); // Initialize all pixels to 'off'
-  Serial.begin(9600);  
+  Serial.begin(9600);
 }
 
 void loop() {
   if(Serial.available() >= 5){
     Serial.readBytes(mode_color, 5);
+    time = millis();
   }
 
   if(mode_color[4] < MIN_INTERVAL)
@@ -54,6 +51,10 @@ void loop() {
 
   if(mode_color[4] > MAX_INTERVAL)
     mode_color[4] = MAX_INTERVAL;
+
+  // If we have 30 seconds of the same, do random stuff
+  if(millis() - time > 30000)
+    mode_color[0] = 255;
 
   switch(mode_color[0]){
     case 0: 
@@ -73,6 +74,9 @@ void loop() {
       break;
     case 5:
       knightrider(strip.Color(mode_color[1], mode_color[2], mode_color[3]), 1);
+    case 255:
+      delay(100);
+      //randomLights();
     default:
       // assume malice
       theaterChase(strip.Color(1,1,1), 10);
