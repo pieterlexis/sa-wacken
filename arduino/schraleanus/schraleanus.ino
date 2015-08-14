@@ -4,6 +4,8 @@
 #endif
 
 #define PIN 9
+#define MIN_INTERVAL 30
+#define MAX_INTERVAL 130
 
 // Parameter 1 = number of pixels in strip
 // Parameter 2 = Arduino pin number (most are valid)
@@ -46,14 +48,12 @@ void loop() {
   if(Serial.available() >= 5){
     Serial.readBytes(mode_color, 5);
   }
-  
-  if(mode_color[4] < 30) {
-    mode_color[4] = 30;
-  }
 
-  if(mode_color[4] > 130) {
-    mode_color[4] = 130;
-  }
+  if(mode_color[4] < MIN_INTERVAL)
+    mode_color[4] = MIN_INTERVAL;
+
+  if(mode_color[4] > MAX_INTERVAL)
+    mode_color[4] = MAX_INTERVAL;
 
   switch(mode_color[0]){
     case 0: 
