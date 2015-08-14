@@ -33,21 +33,19 @@ def try_connect():
                 ser = serial.Serial('/dev/tty%s%s' % (t, n))
                 return
             except:
-                pass
+                continue
+
+
+try_connect()
 
 
 def sendit(msg):
     global ser
     ctr = 0
-
-    if ser is None:
-        try_connect()
-
-    ctr = 0
     while ctr < 4:
         ctr = ctr + 1
         try:
-            ser.write(toSend)
+            ser.write(msg)
             return True
         except:
             ser.close()
