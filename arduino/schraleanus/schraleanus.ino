@@ -4,6 +4,7 @@
 #endif
 
 #define PIN 9
+#define NUM_PIXELS 150
 #define MIN_INTERVAL 30
 #define MAX_INTERVAL 130
 
@@ -14,7 +15,7 @@
 //   NEO_KHZ400  400 KHz (classic 'v1' (not v2) FLORA pixels, WS2811 drivers)
 //   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
 //   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(150, PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_PIXELS, PIN, NEO_GRB + NEO_KHZ800);
 
 /* Extremely easy serial protocol that consists of 5 bytes:
  *
@@ -25,19 +26,32 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(150, PIN, NEO_GRB + NEO_KHZ800);
  * 4 - interval (used for delay())
  *
  */
-byte mode_color[5] = {255, 0, 0, 0, 60};
+byte mode_color[5];
 
-unsigned long time = millis();
+// A timer that counts the number of milliseconds since last change
+unsigned long time;
+
+void makeRandom() {
+  // FIXME create an array of the different modes so we can get
+  // the number from that.
+  mode_color[0] = random(7);
+  for(byte i = 1; i <= 3; ++i) {
+    mode_color[i] = random(256);
+  }
+  mode_color[4] = random(MIN_INTERVAL, MAX_INTERVAL + 1);
+  time = millis();
+}
 
 void setup() {
   strip.begin();
-  strip.setBrightness(90);
+  strip.setBrightness(40);
   strip.show(); // Initialize all pixels to 'off'
+  makeRandom(); // Initialize a random pattern
   Serial.begin(9600);
 }
 
 void loop() {
-  if(Serial.available() >= 5){
+  if(Serial.available() >= 5) {
     Serial.readBytes(mode_color, 5);
     time = millis();
   }
@@ -48,12 +62,12 @@ void loop() {
   if(mode_color[4] > MAX_INTERVAL)
     mode_color[4] = MAX_INTERVAL;
 
-  // If we have 30 seconds of the same, do random stuff
-  if(millis() - time > 30000)
-    mode_color[0] = 255;
+  // If we have 60 seconds of the same mode, do random stuff
+  if(millis() - time > 60000)
+    makeRandom();
 
   switch(mode_color[0]){
-    case 0: 
+    case 0:
       colorWipe(strip.Color(mode_color[1], mode_color[2], mode_color[3]), mode_color[4]);
       break;
     case 1:
@@ -70,9 +84,10 @@ void loop() {
       break;
     case 5:
       knightrider(strip.Color(mode_color[1], mode_color[2], mode_color[3]), 1);
-    case 255:
-      delay(100);
-      //randomLights();
+      break;
+    case 6:
+      fillRUp(strip.Color(mode_color[1], mode_color[2], mode_color[3]), mode_color[4]/5, 8);
+      break;
     default:
       // assume malice
       theaterChase(strip.Color(1,1,1), 10);
@@ -94,6 +109,7 @@ void colorWipe(uint32_t c, uint8_t wait) {
     delay(wait);
   }
 }
+
 
 void rainbow(uint8_t wait) {
   uint16_t i, j;
@@ -160,28 +176,61 @@ void theaterChaseRainbow(uint8_t wait) {
 // Modified to take a color
 void knightrider(uint32_t color, uint8_t wait) {
   uint8_t i;
-  
-  for(i = 0; i < strip.numPixels(); i++) {
-    if(i == 0) {
-       strip.setPixelColor(strip.numPixels() - 1, 0, 0, 0); 
-    } else {
-       strip.setPixelColor(i - 1, 0, 0, 0);
+
+  for(int x = 0; x < 4; x++) {
+    for(i = 0; i < strip.numPixels(); i++) {
+      if(i == 0) {
+        strip.setPixelColor(strip.numPixels() - 1, 0, 0, 0); 
+      } else {
+        strip.setPixelColor(i - 1, 0, 0, 0);
+      }
+      strip.setPixelColor(i, color);
+      strip.show();
+      delay(wait);
     }
-     strip.setPixelColor(i, color);
-     strip.show();
-     delay(wait);
+
+    for(i = strip.numPixels(); i > 0; i--) {
+      if(i == 0) {
+        strip.setPixelColor(strip.numPixels() + 1, 0, 0, 0); 
+      } else {
+        strip.setPixelColor(i + 1, 0, 0, 0);
+      }
+      strip.setPixelColor(i, color);
+      strip.show();
+      delay(wait);
+    }
   }
-  
-  for(i = strip.numPixels(); i > 0; i--) {
-    if(i == 0) {
-       strip.setPixelColor(strip.numPixels() + 1, 0, 0, 0); 
-    } else {
-       strip.setPixelColor(i + 1, 0, 0, 0);
+}
+
+void fillRUp(uint32_t color, uint8_t wait, uint8_t len) {
+  if (len > strip.numPixels())
+    len = strip.numPixels() / 10;
+
+  int stopAt = strip.numPixels();
+  while (stopAt > 0){
+    for (uint8_t i = 0; i < stopAt; i++) {
+      strip.setPixelColor(i, color);
+      if(i>=len) {
+        strip.setPixelColor(i-len, 0);
+      }
+      strip.show();
+      delay(wait);
     }
-     strip.setPixelColor(i, color);
-     strip.show();
-     delay(wait);
-   }
+    stopAt -= len;
+  }
+
+  int startAt = strip.numPixels() - len;
+  while (startAt > 0){
+    for (uint8_t i = 0; i + startAt < strip.numPixels(); i++){
+      strip.setPixelColor(startAt + i, 0);
+      if(startAt + i + len <= strip.numPixels()) {
+        strip.setPixelColor(startAt + i + len, color);
+      }
+      strip.show();
+      delay(wait);
+    }
+    startAt -= len;
+  }
 }
 
 // Input a value 0 to 255 to get a color value.
