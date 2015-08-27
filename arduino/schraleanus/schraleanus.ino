@@ -1,6 +1,7 @@
 #include <Adafruit_NeoPixel.h>
 #ifdef __AVR__
   #include <avr/power.h>
+  #include <Entropy.h>
 #endif
 
 #define PIN 9
@@ -34,11 +35,19 @@ unsigned long time;
 void makeRandom() {
   // FIXME create an array of the different modes so we can get
   // the number from that.
+#ifdef __AVR__
+  mode_color[0] = Entropy.random(7);
+  for(byte i = 1; i <= 3; ++i) {
+    mode_color[i] = Entropy.random(256);
+  }
+  mode_color[4] = Entropy.random(MIN_INTERVAL, MAX_INTERVAL + 1);
+#else
   mode_color[0] = random(7);
   for(byte i = 1; i <= 3; ++i) {
     mode_color[i] = random(256);
   }
   mode_color[4] = random(MIN_INTERVAL, MAX_INTERVAL + 1);
+#endif
   time = millis();
 }
 
@@ -46,6 +55,9 @@ void setup() {
   strip.begin();
   strip.setBrightness(40);
   strip.show(); // Initialize all pixels to 'off'
+#ifdef __AVR__
+  Entropy.initialize();
+#endif
   makeRandom(); // Initialize a random pattern
   Serial.begin(9600);
 }
